@@ -40,3 +40,10 @@ resource "google_compute_instance" "instance" {
 
   metadata_startup_script = file("install-jenkins.sh")
 }
+
+# service account for jenkins-iac-pipeline
+resource "google_service_account" "service_account" {
+  account_id   = "sa-pipeline"
+  display_name = "sa-pipeline"
+  description = "this is pipeline service account which is used to provision the resources"
+}
