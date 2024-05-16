@@ -1,0 +1,58 @@
+pipeline{
+    environment {
+        GOOGLE_APPLICATION_CRED = credentials('sa-pipeline-key')
+    }
+    
+    triggers {
+        githubPush()
+    }
+
+    
+    agent {
+        docker {
+            image 'hashicorp/terraform'
+            args '-v /var/jenkins_home:/workspace'
+            
+        }
+   }
+    
+    stages {
+        stage('git-clone'){
+            steps{
+                 git branch: "${env.BRANCH_NAME}", url: 'https://github.com/atharvjoshi34/jenkins-terrafom-iac.git'
+            }
+        }
+        stage('terraform int'){
+            steps{
+                script {
+                  sh 'terraform init'  
+                }
+                
+            }
+        }
+        stage('terraform plan'){
+            when {
+                expression {env.BRANCH_NAME != 'main'}
+            }
+            steps {
+                script {
+                    sh 'terraform plan -out=tfplan'
+                    archiveArtifacts artifacts: 'tfplan', fingerprint: true
+                }
+            }
+        }
+        stage('terraform apply'){
+            when {
+                expression {env.BRANCH_NAME == 'main'}
+            }
+            steps{
+                script {
+                unarchive mapping: ['tfplan': 'tfplan']
+                sh 'terraform apply -auto-approve tfplan'
+                }
+                
+            }
+            
+        }
+    }
+}
