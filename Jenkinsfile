@@ -1,9 +1,7 @@
 pipeline {
     environment {
         GOOGLE_APPLICATION_CREDENTIALS = credentials('sa-pipeline-key')
-        
-        
-    }
+         }
 
     triggers {
         githubPush()
@@ -18,9 +16,9 @@ pipeline {
     }
 
     stages {
-        stage('git clone') {
+        stage('Checkout Code') {
             steps {
-                sh 'git clone https://github.com/atharvjoshi34/jenkins-terrafom-iac.git'
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/atharvjoshi34/jenkins-terrafom-iac.git']]]) // Replace with your Git repository URL
             }
         }
         stage('Terraform Init') {
@@ -34,21 +32,16 @@ pipeline {
             }
         }
         stage('Run Terraform Apply') {
-    when {
-        expression { env.BRANCH_NAME == 'main' }
-    }
-    steps {
-        script {
-            def additionalArgs = ""
-            if (env.APPLY_ARGS) {
-                additionalArgs = " " + env.APPLY_ARGS // Allows passing optional arguments via environment variable
+            steps {
+                script {
+                    def additionalArgs = ""
+                    if (env.APPLY_ARGS) {
+                        additionalArgs = " " + env.APPLY_ARGS // Allows passing optional arguments via environment variable
+                    }
+                    sh 'terraform apply -auto-approve' + additionalArgs
+                }
             }
-            sh 'terraform apply -auto-approve' + additionalArgs
         }
     }
-}
-
-    }
-   
 }
     
