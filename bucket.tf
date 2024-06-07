@@ -4,6 +4,12 @@ resource "google_storage_bucket" "log-bucket" {
   
 }
 
+resource "google_storage_bucket" "log-bucket" {
+    name = "jenkins-test-iac-pipeline-branch"
+    location = "US" 
+  
+}
+
 resource "google_storage_bucket_iam_member" "bucket_A" {
   bucket   = "jenkins-test-iac-pipeline-log"
   role     = "roles/storage.objectCreator"  # Allows creating objects (read and write)
